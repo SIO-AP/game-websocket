@@ -127,7 +127,7 @@ public class MySQLAccess {
 	}
 	
 	public void createParty(Party theParty) {
-		try {
+	/*	try {
 			Statement st = conn.createStatement();
 			ResultSet resultSet = st.executeQuery("insert into party values"
 					+ "(default, '"+ theParty.getName() +"', "+ theParty.getLeaderId());
@@ -135,7 +135,7 @@ public class MySQLAccess {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	private ArrayList<Integer> listeIdQuestion(int maxQuestions)

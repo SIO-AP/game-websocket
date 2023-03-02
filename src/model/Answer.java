@@ -5,10 +5,13 @@ public class Answer {
     String descriptionAnswer;
     boolean isCorrect;
 
+    public Answer() {
+    }
+    
     public Answer(String codeAnswer, String descriptionAnswer, boolean isCorrect) {
-        this.codeAnswer = codeAnswer;
-        this.descriptionAnswer = descriptionAnswer;
-        this.isCorrect = isCorrect;
+    	this.codeAnswer = codeAnswer;
+    	this.descriptionAnswer = descriptionAnswer;
+    	this.isCorrect = isCorrect;
     }
 
     public String getCodeAnswer() {

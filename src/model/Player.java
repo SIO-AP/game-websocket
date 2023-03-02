@@ -6,6 +6,9 @@ public class Player {
 	private int myScore;
 	private int aGroupId;
 
+	public Player() {				
+	}
+	
 	public Player(String aName, int aScore) {
 		this.myName = aName;
 		this.myScore = aScore;				

@@ -6,9 +6,13 @@ public class Question {
     String descriptionQuestion;
     ArrayList<Answer> answers;
 
+    public Question() {
+
+    }
+    
     public Question(String descriptionQuestion, ArrayList<Answer> answers) {
-        this.descriptionQuestion = descriptionQuestion;
-        this.answers = answers;
+    	this.descriptionQuestion = descriptionQuestion;
+    	this.answers = answers;
     }
 
     public String getDescriptionQuestion() {
