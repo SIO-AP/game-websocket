@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Random;
 
+import controller.Controller;
 import model.Answer;
 import model.Party;
 import model.Player;
@@ -21,13 +22,18 @@ import model.Question;
 public class MySQLAccess {
 	private Connection connect = null;
 	private Statement statement = null;
-	private PreparedStatement preparedStatement = null;
 	private ResultSet resultSet = null;
+
+	private Controller monController;
 
 	private String urlCnx;
 	private String loginCnx;
 	private String passwordCnx;
 	private Connection conn;
+
+	public MySQLAccess(Controller unController) {
+		this.monController = unController;
+	}
 
 	public void connection() throws IOException, SQLException, ClassNotFoundException {
 		// Charge le fichier de propriété contenant les informations d'accès à la BDD
@@ -48,12 +54,12 @@ public class MySQLAccess {
 	}
 
 	public int nombreTotalQuestion() throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
-		
+
 		try (Statement st = conn.createStatement()) {
-		ResultSet resultSet = st.executeQuery("select count(*) from question");
-		resultSet.next();
-		int res = resultSet.getInt(1);
-		return res;
+			ResultSet resultSet = st.executeQuery("select count(*) from question");
+			resultSet.next();
+			int res = resultSet.getInt(1);
+			return res;
 		}
 	}
 
@@ -101,41 +107,61 @@ public class MySQLAccess {
 				int idQuestion = resultSet.getInt(1);
 				String nomQuestion = resultSet.getString(2);
 
-				questions.add(new Question(nomQuestion, getAnswersFromQuestion(idQuestion)));
+				questions.add(new Question(idQuestion, nomQuestion, getAnswersFromQuestion(idQuestion)));
 			}
 		}
 		return questions;
 	}
-	
-	public Party getParty(int idGroup) throws SQLException {
+
+	public Party getParty(int idParty) throws SQLException {
 		try (Statement st = conn.createStatement()) {
 
-			ResultSet resultSet = st.executeQuery("select * from group where id_group = " + idGroup);
+			ResultSet resultSet = st.executeQuery("select * from group where id_group = " + idParty);
 			resultSet.next();
 
 			int aIdGroup = resultSet.getInt(1);
 			String nameGroup = resultSet.getString(2);
-			int leaderId= resultSet.getInt(3);
+			int leaderId = resultSet.getInt(3);
 			ArrayList<Player> thePlayers = (ArrayList<Player>) resultSet.getArray(4);
 			ArrayList<Question> theQuestions = (ArrayList<Question>) resultSet.getArray(5);
 
-			Party theGroup = new Party(aIdGroup, nameGroup, leaderId, thePlayers, theQuestions);
-			return theGroup;
+			// Party theGroup = new Party(aIdGroup, nameGroup, leaderId, thePlayers,
+			// theQuestions);
+			// return theGroup;
+			return null;
 
 		}
-		
-	}
-	
-	public void createParty(Party theParty) {
-	/*	try {
-			Statement st = conn.createStatement();
-			ResultSet resultSet = st.executeQuery("insert into party values"
-					+ "(default, '"+ theParty.getName() +"', "+ theParty.getLeaderId());
-			resultSet.next();
 
-		} catch (Exception e) {
+	}
+
+	public Party createParty(Party theParty) {
+		String query = "INSERT INTO h5ws00fg4ypyuohr.GAME VALUES (DEFAULT, ?, ?, ?, ?)";
+		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
+
+				PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);) {
+
+			ps.setString(1, theParty.getName());
+			ps.setInt(2, theParty.getIdLeader());
+			ps.setInt(3, 1);
+			ps.setString(4, "12:00:00");
+
+			ps.execute();
+
+			ResultSet rs = ps.getGeneratedKeys();
+			int generatedKey = 0;
+			if (rs.next()) {
+				generatedKey = rs.getInt(1);
+			}
+
+			System.out.println("Inserted record's ID: " + generatedKey);
+
+			theParty.setIdParty(generatedKey);
+			return theParty;
+
+		} catch (SQLException e) {
 			e.printStackTrace();
-		}*/
+			return theParty;
+		}
 	}
 
 	private ArrayList<Integer> listeIdQuestion(int maxQuestions)
@@ -174,6 +200,68 @@ public class MySQLAccess {
 				connect.close();
 			}
 		} catch (Exception e) {
+
+		}
+	}
+
+	public void createQuestionParty(Party theParty) {
+		String query = "INSERT INTO h5ws00fg4ypyuohr.GAME_QUESTION VALUES (?, ?)";
+		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
+				PreparedStatement ps = connection.prepareStatement(query);) {
+
+			for (Question question : theParty.getGroupQuestions()) {
+
+				ps.setInt(1, theParty.getIdParty());
+				ps.setInt(2, question.getId());
+
+				ps.execute();
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+
+		}
+
+	}
+
+	public void createPlayerParty(Party theParty) {
+		String query = "INSERT INTO h5ws00fg4ypyuohr.GAME_PLAYER VALUES (?, ?, ?)";
+		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
+				PreparedStatement ps = connection.prepareStatement(query);) {
+
+			ps.setInt(1, theParty.getIdParty());
+			ps.setInt(2, theParty.getIdLeader());
+			ps.setInt(3, 0);
+
+			ps.execute();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+
+		}
+	}
+
+	public ArrayList<Party> getListParty() {
+		String query = "SELECT game.name_game, game.id_game, count(*) as nbQuestion_game, game.start_game\r\n"
+				+ "FROM h5ws00fg4ypyuohr.game\r\n"
+				+ "inner join game_question on game_question.id_game = game.id_game\r\n"
+				+ "where game.progress_game = 1\r\n"
+				+ "group by game.id_game, game.name_game, game.start_game;";
+		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
+				Statement st = connection.createStatement()) {
+
+			ArrayList<Party> lesParty = new ArrayList<Party>();
+
+			ResultSet res = st.executeQuery(query);
+			while (res.next()) {
+				lesParty.add(new Party(res.getString(1), res.getInt(2), res.getInt(3), res.getString(4)));
+			}
+			
+			return lesParty;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
 
 		}
 	}
