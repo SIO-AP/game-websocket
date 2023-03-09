@@ -29,33 +29,36 @@ public class MySQLAccess {
 	private String urlCnx;
 	private String loginCnx;
 	private String passwordCnx;
-	private Connection conn;
 
 	public MySQLAccess(Controller unController) {
 		this.monController = unController;
-	}
 
-	public void connection() throws IOException, SQLException, ClassNotFoundException {
 		// Charge le fichier de propriété contenant les informations d'accès à la BDD
 		Properties properties = new Properties();
 		try (InputStream fis = getClass().getClassLoader().getResourceAsStream("data/conf.properties")) {
 			properties.load(fis);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		// Charge le driver
-		Class.forName(properties.getProperty("jdbc.driver.class"));
+		try {
+			Class.forName(properties.getProperty("jdbc.driver.class"));
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 
 		// Crée la connexion
 		urlCnx = properties.getProperty("jdbc.url");
 		loginCnx = properties.getProperty("jdbc.login");
 		passwordCnx = properties.getProperty("jdbc.password");
 
-		conn = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 	}
 
 	public int nombreTotalQuestion() throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
 
-		try (Statement st = conn.createStatement()) {
+		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
+				Statement st = connection.createStatement()) {
 			ResultSet resultSet = st.executeQuery("select count(*) from question");
 			resultSet.next();
 			int res = resultSet.getInt(1);
@@ -63,19 +66,14 @@ public class MySQLAccess {
 		}
 	}
 
-	public int generateQuestionId(int nombreTotalQuestion) {
-		int randomNumber = new Random().nextInt(nombreTotalQuestion + 0);
-		return randomNumber;
-	}
-
-	private ArrayList<Answer> getAnswersFromQuestion(int id)
+	private ArrayList<Answer> getAnswersFromQuestion(Connection connection, int id)
 			throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
 
 		ArrayList<Answer> answers = new ArrayList<Answer>();
 
 		String strSqlQuestion = "select * from answer where id_question = " + id + " order by rand()";
 
-		try (Statement st = conn.createStatement()) {
+		try (Statement st = connection.createStatement()) {
 			ResultSet resultSet = st.executeQuery(strSqlQuestion);
 			for (int i = 0; i < 4; i++) {
 				resultSet.next();
@@ -89,14 +87,13 @@ public class MySQLAccess {
 
 	}
 
-	public ArrayList<Question> getQuestions(int maxQuestions)
+	public ArrayList<Question> getQuestions(ArrayList<Integer> listeIdQuestion)
 			throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
 
 		ArrayList<Question> questions = new ArrayList<Question>();
 
-		ArrayList<Integer> listeIdQuestion = listeIdQuestion(maxQuestions);
-
-		try (Statement st = conn.createStatement()) {
+		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
+				Statement st = connection.createStatement()) {
 
 			for (int i : listeIdQuestion) {
 				System.out.println(i);
@@ -107,31 +104,10 @@ public class MySQLAccess {
 				int idQuestion = resultSet.getInt(1);
 				String nomQuestion = resultSet.getString(2);
 
-				questions.add(new Question(idQuestion, nomQuestion, getAnswersFromQuestion(idQuestion)));
+				questions.add(new Question(idQuestion, nomQuestion, getAnswersFromQuestion(connection, idQuestion)));
 			}
 		}
 		return questions;
-	}
-
-	public Party getParty(int idParty) throws SQLException {
-		try (Statement st = conn.createStatement()) {
-
-			ResultSet resultSet = st.executeQuery("select * from group where id_group = " + idParty);
-			resultSet.next();
-
-			int aIdGroup = resultSet.getInt(1);
-			String nameGroup = resultSet.getString(2);
-			int leaderId = resultSet.getInt(3);
-			ArrayList<Player> thePlayers = (ArrayList<Player>) resultSet.getArray(4);
-			ArrayList<Question> theQuestions = (ArrayList<Question>) resultSet.getArray(5);
-
-			// Party theGroup = new Party(aIdGroup, nameGroup, leaderId, thePlayers,
-			// theQuestions);
-			// return theGroup;
-			return null;
-
-		}
-
 	}
 
 	public Party createParty(Party theParty) {
@@ -162,27 +138,6 @@ public class MySQLAccess {
 			e.printStackTrace();
 			return theParty;
 		}
-	}
-
-	private ArrayList<Integer> listeIdQuestion(int maxQuestions)
-			throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
-
-		ArrayList<Integer> listeIdQuestion = new ArrayList<Integer>();
-		int nombreTotalQuestion = nombreTotalQuestion();
-
-		for (int i = 0; i < maxQuestions; i++) {
-			int test = generateQuestionId(nombreTotalQuestion);
-
-			if (listeIdQuestion.contains(test)) {
-				while (listeIdQuestion.contains(test)) {
-					test = generateQuestionId(nombreTotalQuestion);
-				}
-				listeIdQuestion.add(test);
-			} else {
-				listeIdQuestion.add(test);
-			}
-		}
-		return listeIdQuestion;
 	}
 
 	// You need to close the resultSet
@@ -245,8 +200,9 @@ public class MySQLAccess {
 		String query = "SELECT game.name_game, game.id_game, count(*) as nbQuestion_game, game.start_game\r\n"
 				+ "FROM h5ws00fg4ypyuohr.game\r\n"
 				+ "inner join game_question on game_question.id_game = game.id_game\r\n"
-				+ "where game.progress_game = 1\r\n"
-				+ "group by game.id_game, game.name_game, game.start_game;";
+				+ "where game.progress_game = 1\r\n" + "group by game.id_game, game.name_game, game.start_game\r\n"
+				+ "order by game.id_game desc;";
+		// + "order by game.name_game;";
 		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 				Statement st = connection.createStatement()) {
 
@@ -256,7 +212,7 @@ public class MySQLAccess {
 			while (res.next()) {
 				lesParty.add(new Party(res.getString(1), res.getInt(2), res.getInt(3), res.getString(4)));
 			}
-			
+
 			return lesParty;
 
 		} catch (SQLException e) {

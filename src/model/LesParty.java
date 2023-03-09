@@ -3,7 +3,7 @@ package model;
 import java.util.ArrayList;
 
 public class LesParty {
-	private ArrayList<Party> lesParty;
+	private ArrayList<Party> lesParty = new ArrayList<Party>();
 	
 	public LesParty() {}
 	

@@ -2,6 +2,8 @@ package model;
 
 import java.util.ArrayList;
 
+import com.esotericsoftware.kryonet.Connection;
+
 public class Party {
 
 	private int idParty;
@@ -11,6 +13,7 @@ public class Party {
 	private ArrayList<Player> playerList;
 	private ArrayList<Question> groupQuestions;
 	private String time;
+	private ArrayList<Connection> lesConnections;
 	
 	public Party() {};
 	
@@ -19,7 +22,6 @@ public class Party {
 		this.idLeader = idLeader;
 		this.nbQuestion = nbQuestion;
 	}
-	
 	
 	public Party(String name, int idParty, int nbQuestion, String time) {
 		this.name = name;
@@ -35,6 +37,18 @@ public class Party {
 		this.playerList = playerList;
 		this.groupQuestions = theQuestions;
 		this.nbQuestion = nbQuestion;
+	}
+	
+	public Party(int idParty, String name, int idLeader, ArrayList<Player> playerList, ArrayList<Question> theQuestions, int nbQuestion, String time, Connection connection) {
+		this.idParty = idParty;
+		this.name = name;
+		this.idLeader = idLeader;
+		this.playerList = playerList;
+		this.groupQuestions = theQuestions;
+		this.nbQuestion = nbQuestion;
+		this.lesConnections = new ArrayList<Connection>();
+		this.lesConnections.add(connection);	
+		this.time = time;
 	}
 
 	public int getIdParty() {
@@ -93,6 +107,15 @@ public class Party {
 		this.time = time;
 	}
 
+	public ArrayList<Connection> getLesConnections() {
+		return lesConnections;
+	}
+
+	public void setLesConnections(ArrayList<Connection> lesConnections) {
+		this.lesConnections = lesConnections;
+	}
+
+	
 	
 
 	
