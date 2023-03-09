@@ -1,0 +1,9 @@
+INDEX VERSION 1.131+/home/sohkey/Documents/Cours/java-server/game-websocket/.metadata/.plugins/org.eclipse.jdt.core
+1865797976.index
+1610243024.index
+159884852.index
+1355475255.index
+727591107.index
+3993722214.index
+388607917.index
+808666008.index
