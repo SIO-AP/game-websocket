@@ -1,31 +1,26 @@
 package model;
 
+import controller.Controller;
+
 public class Player {
-	
+
+	private int myId;
 	private String myName;
 	private int myScore;
-	private int aGroupId;
 
-	public Player() {				
+	public Player() {
+
 	}
-	
+
 	public Player(String aName, int aScore) {
 		this.myName = aName;
-		this.myScore = aScore;				
-	}
-	
-	public Player(String aName, int aScore, int groupId) {
-		this.myName = aName;
-		this.myScore = aScore;				
-		this.aGroupId = groupId;
-	}
-	
-	public int getaGroupId() {
-		return aGroupId;
+		this.myScore = aScore;
 	}
 
-	public void setaGroupId(int aGroupId) {
-		this.aGroupId = aGroupId;
+	public Player(int aId, String aName, int aScore) {
+		this.myId = aId;
+		this.myName = aName;
+		this.myScore = aScore;
 	}
 
 
@@ -44,6 +39,13 @@ public class Player {
 	public void setMyScore(int myScore) {
 		this.myScore = myScore;
 	}
-	
-	
+
+	public int getMyId() {
+		return myId;
+	}
+
+	public void setMyId(int myId) {
+		this.myId = myId;
+	}
+
 }
