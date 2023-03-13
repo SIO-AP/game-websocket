@@ -12,6 +12,7 @@ import data.MySQLAccess;
 import enpoints.Message;
 import model.LesParty;
 import model.Party;
+import model.Player;
 import model.Question;
 
 public class Controller {
@@ -33,20 +34,18 @@ public class Controller {
 
 			quizQuestions = laBase.getQuestions(listeIdQuestion);
 
-			Party party = new Party(0, partyRequest.getName(), partyRequest.getIdLeader(), null, quizQuestions,
-					partyRequest.getNbQuestion());
+			Party game = new Party(0, partyRequest.getName(), partyRequest.getIdLeader(), partyRequest.getPlayerList(),
+					quizQuestions, partyRequest.getNbQuestion());
 
-			party = laBase.createParty(party);
-			laBase.createQuestionParty(party);
-			laBase.createPlayerParty(party);
+			game = laBase.createParty(game);
+		//	laBase.createQuestionParty(game);
+		//	laBase.createPlayerParty(game);
 
-			// lesGames.getLesParty().add(new Party(party.getIdParty(), connection));
-			lesGames.getLesParty().add(new Party(party.getIdParty(), party.getName(), party.getIdLeader(), null,
-					party.getGroupQuestions(), party.getNbQuestion(), "12:00:00", connection));
+			lesGames.getLesParty().add(new Party(game.getIdParty(), game.getName(), game.getIdLeader(),
+					game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion(), "12:00:00", connection));
 
-			return party;
+			return game;
 		} catch (ClassNotFoundException | IOException | SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -55,20 +54,80 @@ public class Controller {
 
 	public void selectOption(Message message, Connection connection) {
 		if (message.getOption() == 1) { // JoinGame
-			joinGame(message.getIdGame(), connection);
+			joinGame(message.getIdGame(), message.getPlayer(), connection);
+		} else if (message.getOption() == 2) { // Start game
+			startGame(message.getIdGame(), connection);
+		} else if (message.getOption() == 5) { // Change le score du player
+			setScorePlayer(message.getIdGame(), message.getPlayer(), connection);
 		}
 	}
 
-	public void joinGame(int idGame, Connection connection) {
+	private void startGame(int idGame, Connection connection) {
 		for (Party game : lesGames.getLesParty()) {
 			if (game.getIdParty() == idGame) {
-				game.getLesConnections().add(connection);
-				System.out.println("add connection");
-				connection.sendTCP(new Party(game.getIdParty(), game.getName(), game.getIdLeader(), null, game.getGroupQuestions(), game.getNbQuestion()));
-				// connection.sendTCP();
+				for (Connection conn : game.getLesConnections()) {
+					try {
+						conn.sendTCP(new Message(2));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				game.setStatusGame(2);
 				break;
 			}
 		}
+	}
+
+	public void setScorePlayer(int idGame, Player player, Connection connection) {
+		for (Party game : lesGames.getLesParty()) {
+			if (game.getIdParty() == idGame) {
+				for (Player p : game.getPlayerList()) {
+					if (p.getMyId() == player.getMyId()) {
+						p.setMyScore(player.getMyScore());
+
+						// Envoie de la nouvelle liste des joueurs aux connexions de la partie
+						for (Connection conn : game.getLesConnections()) {
+							try {
+								conn.sendTCP(new Message(4, game.getPlayerList()));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+						return;
+					}
+				}
+
+			}
+		}
+
+	}
+
+	public void joinGame(int idGame, Player player, Connection connection) {
+		for (Party game : lesGames.getLesParty()) {
+			if (game.getIdParty() == idGame) {
+				if (game.getStatusGame() == 1) {
+					game.getPlayerList().add(player);
+					connection.sendTCP(new Party(game.getIdParty(), game.getName(), game.getIdLeader(),
+							game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion()));
+
+					// Envoie de la nouvelle liste des joueurs aux connections de la partie
+					for (Connection conn : game.getLesConnections()) {
+						try {
+							conn.sendTCP(new Message(4, game.getPlayerList()));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+
+					System.out.println("add connection");
+					game.getLesConnections().add(connection);
+				} else {
+					connection.sendTCP(new Message(3));
+				}
+				return;
+			}
+		}
+		connection.sendTCP(new Message(3));
 	}
 
 	private ArrayList<Integer> listeIdQuestion(int maxQuestions)

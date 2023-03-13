@@ -14,13 +14,16 @@ public class Party {
 	private ArrayList<Question> groupQuestions;
 	private String time;
 	private ArrayList<Connection> lesConnections;
+	private int statusGame;
 	
 	public Party() {};
 	
-	public Party(String name, int idLeader, int nbQuestion) {
+	public Party(String name, int idLeader, int nbQuestion, Player leader) {
 		this.name = name;
 		this.idLeader = idLeader;
 		this.nbQuestion = nbQuestion;
+		this.playerList = new ArrayList<Player>();
+		this.playerList.add(leader);	
 	}
 	
 	public Party(String name, int idParty, int nbQuestion, String time) {
@@ -49,6 +52,7 @@ public class Party {
 		this.lesConnections = new ArrayList<Connection>();
 		this.lesConnections.add(connection);	
 		this.time = time;
+		this.statusGame = 1;
 	}
 
 	public int getIdParty() {
@@ -113,6 +117,14 @@ public class Party {
 
 	public void setLesConnections(ArrayList<Connection> lesConnections) {
 		this.lesConnections = lesConnections;
+	}
+
+	public int getStatusGame() {
+		return statusGame;
+	}
+
+	public void setStatusGame(int statusGame) {
+		this.statusGame = statusGame;
 	}
 
 	

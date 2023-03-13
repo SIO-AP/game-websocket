@@ -36,7 +36,6 @@ public class ServerGame {
 		try {
 			server.bind(54556, 54776);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -57,8 +56,10 @@ public class ServerGame {
 					LesParty lesParty = new LesParty();
 
 					for (Party game : monController.getLesGames().getLesParty()) {
-						lesParty.getLesParty().add(
-								new Party(game.getName(), game.getIdParty(), game.getNbQuestion(), game.getTime()));
+						if (game.getStatusGame() == 1) {
+							lesParty.getLesParty().add(
+									new Party(game.getName(), game.getIdParty(), game.getNbQuestion(), game.getTime()));
+						}
 					}
 					connection.sendTCP(lesParty);
 				}

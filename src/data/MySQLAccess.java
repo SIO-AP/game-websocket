@@ -96,8 +96,6 @@ public class MySQLAccess {
 				Statement st = connection.createStatement()) {
 
 			for (int i : listeIdQuestion) {
-				System.out.println(i);
-
 				ResultSet resultSet = st.executeQuery("select * from question where id_question = " + i);
 				resultSet.next();
 
@@ -128,8 +126,6 @@ public class MySQLAccess {
 			if (rs.next()) {
 				generatedKey = rs.getInt(1);
 			}
-
-			System.out.println("Inserted record's ID: " + generatedKey);
 
 			theParty.setIdParty(generatedKey);
 			return theParty;
