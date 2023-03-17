@@ -15,7 +15,7 @@ import java.util.Random;
 
 import controller.Controller;
 import model.Answer;
-import model.Party;
+import model.Game;
 import model.Player;
 import model.Question;
 
@@ -49,10 +49,9 @@ public class MySQLAccess {
 		}
 
 		// Crée la connexion
-		urlCnx = properties.getProperty("jdbc.url");
-		loginCnx = properties.getProperty("jdbc.login");
-		passwordCnx = properties.getProperty("jdbc.password");
-
+		urlCnx = monController.getTheDecrypter().decrypt(properties.getProperty("jdbc.url"));
+		loginCnx = monController.getTheDecrypter().decrypt(properties.getProperty("jdbc.login"));
+		passwordCnx = monController.getTheDecrypter().decrypt(properties.getProperty("jdbc.password"));
 	}
 
 	public int nombreTotalQuestion() throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
@@ -70,7 +69,7 @@ public class MySQLAccess {
 			throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
 
 		ArrayList<Answer> answers = new ArrayList<Answer>();
-
+		System.out.println(id);
 		String strSqlQuestion = "select * from answer where id_question = " + id + " order by rand()";
 
 		try (Statement st = connection.createStatement()) {
@@ -78,8 +77,8 @@ public class MySQLAccess {
 			for (int i = 0; i < 4; i++) {
 				resultSet.next();
 				String indexA = Integer.toString(i + 1);
-				String descA = resultSet.getString(1);
-				Boolean resA = resultSet.getBoolean(2);
+				String descA = resultSet.getString(2);
+				Boolean resA = resultSet.getBoolean(3);
 				answers.add(new Answer(indexA, descA, resA));
 			}
 			return answers;
@@ -108,7 +107,7 @@ public class MySQLAccess {
 		return questions;
 	}
 
-	public Party createParty(Party theParty) {
+	public Game createParty(Game theParty) {
 		String query = "INSERT INTO h5ws00fg4ypyuohr.GAME VALUES (DEFAULT, ?, ?, ?, ?)";
 		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 
@@ -127,7 +126,7 @@ public class MySQLAccess {
 				generatedKey = rs.getInt(1);
 			}
 
-			theParty.setIdParty(generatedKey);
+			theParty.setIdGame(generatedKey);
 			return theParty;
 
 		} catch (SQLException e) {
@@ -155,14 +154,14 @@ public class MySQLAccess {
 		}
 	}
 
-	public void createQuestionParty(Party theParty) {
+	public void createQuestionParty(Game theParty) {
 		String query = "INSERT INTO h5ws00fg4ypyuohr.GAME_QUESTION VALUES (?, ?)";
 		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			for (Question question : theParty.getGroupQuestions()) {
 
-				ps.setInt(1, theParty.getIdParty());
+				ps.setInt(1, theParty.getIdGame());
 				ps.setInt(2, question.getId());
 
 				ps.execute();
@@ -175,12 +174,12 @@ public class MySQLAccess {
 
 	}
 
-	public void createPlayerParty(Party theParty) {
+	public void createPlayerParty(Game theParty) {
 		String query = "INSERT INTO h5ws00fg4ypyuohr.GAME_PLAYER VALUES (?, ?, ?)";
 		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
-			ps.setInt(1, theParty.getIdParty());
+			ps.setInt(1, theParty.getIdGame());
 			ps.setInt(2, theParty.getIdLeader());
 			ps.setInt(3, 0);
 
@@ -192,7 +191,7 @@ public class MySQLAccess {
 		}
 	}
 
-	public ArrayList<Party> getListParty() {
+	public ArrayList<Game> getListParty() {
 		String query = "SELECT game.name_game, game.id_game, count(*) as nbQuestion_game, game.start_game\r\n"
 				+ "FROM h5ws00fg4ypyuohr.game\r\n"
 				+ "inner join game_question on game_question.id_game = game.id_game\r\n"
@@ -202,11 +201,11 @@ public class MySQLAccess {
 		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 				Statement st = connection.createStatement()) {
 
-			ArrayList<Party> lesParty = new ArrayList<Party>();
+			ArrayList<Game> lesParty = new ArrayList<Game>();
 
 			ResultSet res = st.executeQuery(query);
 			while (res.next()) {
-				lesParty.add(new Party(res.getString(1), res.getInt(2), res.getInt(3), res.getString(4)));
+				lesParty.add(new Game(res.getString(1), res.getInt(2), res.getInt(3), res.getString(4)));
 			}
 
 			return lesParty;
