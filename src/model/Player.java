@@ -1,12 +1,11 @@
 package model;
 
-import controller.Controller;
-
 public class Player {
 
 	private int myId;
 	private String myName;
 	private int myScore;
+	private int numQuestion;
 
 	public Player() {
 
@@ -47,5 +46,13 @@ public class Player {
 	public void setMyId(int myId) {
 		this.myId = myId;
 	}
+
+	public int getNumQuestion() {
+		return numQuestion;
+	}
+
+	public void setNumQuestion(int numQuestion) {
+		this.numQuestion = numQuestion;
+	}	
 
 }

@@ -10,38 +10,41 @@ import com.esotericsoftware.kryonet.Connection;
 
 import data.MySQLAccess;
 import enpoints.Message;
-import model.LesParty;
-import model.Party;
+import model.Game;
+import model.LesGame;
 import model.Player;
 import model.Question;
 
 public class Controller {
 
 	private MySQLAccess laBase;
-	private LesParty lesGames = new LesParty();
+	private LesGame lesGames = new LesGame();
+
+	private Jasypt theDecrypter;
 
 	public Controller() {
+		this.theDecrypter = new Jasypt();
 		this.laBase = new MySQLAccess(this);
 
 		// Server instantiation
 		ServerGame theServer = new ServerGame(this);
 	}
 
-	public Party createParty(Party partyRequest, Connection connection) {
+	public Game createParty(Game partyRequest, Connection connection) {
 		ArrayList<Question> quizQuestions;
 		try {
 			ArrayList<Integer> listeIdQuestion = listeIdQuestion(partyRequest.getNbQuestion());
 
 			quizQuestions = laBase.getQuestions(listeIdQuestion);
 
-			Party game = new Party(0, partyRequest.getName(), partyRequest.getIdLeader(), partyRequest.getPlayerList(),
+			Game game = new Game(0, partyRequest.getName(), partyRequest.getIdLeader(), partyRequest.getPlayerList(),
 					quizQuestions, partyRequest.getNbQuestion());
 
 			game = laBase.createParty(game);
 		//	laBase.createQuestionParty(game);
 		//	laBase.createPlayerParty(game);
 
-			lesGames.getLesParty().add(new Party(game.getIdParty(), game.getName(), game.getIdLeader(),
+			lesGames.getLesGame().add(new Game(game.getIdGame(), game.getName(), game.getIdLeader(),
 					game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion(), "12:00:00", connection));
 
 			return game;
@@ -63,8 +66,8 @@ public class Controller {
 	}
 
 	private void startGame(int idGame, Connection connection) {
-		for (Party game : lesGames.getLesParty()) {
-			if (game.getIdParty() == idGame) {
+		for (Game game : lesGames.getLesGame()) {
+			if (game.getIdGame() == idGame) {
 				for (Connection conn : game.getLesConnections()) {
 					try {
 						conn.sendTCP(new Message(2));
@@ -79,8 +82,8 @@ public class Controller {
 	}
 
 	public void setScorePlayer(int idGame, Player player, Connection connection) {
-		for (Party game : lesGames.getLesParty()) {
-			if (game.getIdParty() == idGame) {
+		for (Game game : lesGames.getLesGame()) {
+			if (game.getIdGame() == idGame) {
 				for (Player p : game.getPlayerList()) {
 					if (p.getMyId() == player.getMyId()) {
 						p.setMyScore(player.getMyScore());
@@ -96,18 +99,16 @@ public class Controller {
 						return;
 					}
 				}
-
 			}
 		}
-
 	}
 
 	public void joinGame(int idGame, Player player, Connection connection) {
-		for (Party game : lesGames.getLesParty()) {
-			if (game.getIdParty() == idGame) {
+		for (Game game : lesGames.getLesGame()) {
+			if (game.getIdGame() == idGame) {
 				if (game.getStatusGame() == 1) {
 					game.getPlayerList().add(player);
-					connection.sendTCP(new Party(game.getIdParty(), game.getName(), game.getIdLeader(),
+					connection.sendTCP(new Game(game.getIdGame(), game.getName(), game.getIdLeader(),
 							game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion()));
 
 					// Envoie de la nouvelle liste des joueurs aux connections de la partie
@@ -156,8 +157,8 @@ public class Controller {
 		return randomNumber;
 	}
 
-	public ArrayList<Party> getListParty() {
-		ArrayList<Party> lesParty = laBase.getListParty();
+	public ArrayList<Game> getListParty() {
+		ArrayList<Game> lesParty = laBase.getListParty();
 		return lesParty;
 	}
 
@@ -169,12 +170,21 @@ public class Controller {
 		this.laBase = laBase;
 	}
 
-	public LesParty getLesGames() {
+	public LesGame getLesGames() {
 		return lesGames;
 	}
 
-	public void setLesGames(LesParty lesGames) {
+	public void setLesGames(LesGame lesGames) {
 		this.lesGames = lesGames;
 	}
+
+	public Jasypt getTheDecrypter() {
+		return theDecrypter;
+	}
+
+	public void setTheDecrypter(Jasypt theDecrypter) {
+		this.theDecrypter = theDecrypter;
+	}
+	
 
 }
