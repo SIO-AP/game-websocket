@@ -8,13 +8,17 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 
-import data.MySQLAccess;
 import data.SomeRequest;
 import enpoints.Message;
-import model.*;
+import model.Answer;
+import model.Game;
+import model.LesGame;
+import model.Player;
+import model.Question;
+import model.QuizGame;
 
 public class ServerGame {
-	Server server = new Server(100000, 100000);
+	Server server = new Server(10000000, 10000000);
 	private Controller monController;
 
 	public ServerGame(Controller unController) {
@@ -34,7 +38,7 @@ public class ServerGame {
 		server.start();
 
 		try {
-			server.bind(54556, 54776);
+			server.bind(54556);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -56,10 +60,6 @@ public class ServerGame {
 
 				if (object instanceof Game) {
 					Game partyRequest = (Game) object;
-					System.out.println("Nouvelle partie");
-					System.out.println("Nom : " + partyRequest.getName());
-					System.out.println("Nombre de question : " + partyRequest.getNbQuestion());
-
 					Game party = monController.createParty(partyRequest, connection);
 					connection.sendTCP(party);
 				}

@@ -5,7 +5,7 @@ public class Player {
 	private int myId;
 	private String myName;
 	private int myScore;
-	private int numQuestion;
+	//private int numQuestion;
 
 	public Player() {
 
@@ -47,12 +47,12 @@ public class Player {
 		this.myId = myId;
 	}
 
-	public int getNumQuestion() {
-		return numQuestion;
-	}
-
-	public void setNumQuestion(int numQuestion) {
-		this.numQuestion = numQuestion;
-	}	
+//	public int getNumQuestion() {
+//		return numQuestion;
+//	}
+//
+//	public void setNumQuestion(int numQuestion) {
+//		this.numQuestion = numQuestion;
+//	}	
 
 }
