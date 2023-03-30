@@ -1,5 +1,6 @@
 package controller;
 
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -84,6 +85,7 @@ public class Controller {
 	public void setScorePlayer(int idGame, Player player, Connection connection) {
 		for (Game game : lesGames.getLesGame()) {
 			if (game.getIdGame() == idGame) {
+				System.out.println("Nombre de connexion : " + game.getLesConnections().size());
 				for (Player p : game.getPlayerList()) {
 					if (p.getMyId() == player.getMyId()) {
 						p.setMyScore(player.getMyScore());
