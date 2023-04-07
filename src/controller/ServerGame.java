@@ -2,6 +2,7 @@ package controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
@@ -44,6 +45,22 @@ public class ServerGame {
 		}
 
 		server.addListener(new Listener() {
+
+			public void disconnected(Connection connection) {
+				monController.deconnectionClient(connection);
+
+//				Iterator<Game> iterator = monController.getLesGames().getLesGame().iterator();
+//				while (iterator.hasNext()) {
+//					Game game = iterator.next();
+//					game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
+//
+//					if (game.getLesConnections().size() == 0) {
+//						monController.getLaBase().finishedSoloPlayerGame(game);
+//						iterator.remove();
+//					}
+//				}
+			}
+
 			public void received(Connection connection, Object object) {
 
 				if (object instanceof LesGame) {

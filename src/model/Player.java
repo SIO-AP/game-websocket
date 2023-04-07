@@ -5,7 +5,7 @@ public class Player {
 	private int myId;
 	private String myName;
 	private int myScore;
-	//private int numQuestion;
+	private int nbQuestion;
 
 	public Player() {
 
@@ -20,6 +20,13 @@ public class Player {
 		this.myId = aId;
 		this.myName = aName;
 		this.myScore = aScore;
+	}
+	
+	public Player(int aId, String aName, int aScore, int aNbQuestion) {
+		this.myId = aId;
+		this.myName = aName;
+		this.myScore = aScore;
+		this.nbQuestion = aNbQuestion;
 	}
 
 
@@ -47,12 +54,14 @@ public class Player {
 		this.myId = myId;
 	}
 
-//	public int getNumQuestion() {
-//		return numQuestion;
-//	}
-//
-//	public void setNumQuestion(int numQuestion) {
-//		this.numQuestion = numQuestion;
-//	}	
+	public int getNbQuestion() {
+		return nbQuestion;
+	}
+
+	public void setNbQuestion(int nbQuestion) {
+		this.nbQuestion = nbQuestion;
+	}
+	
+	
 
 }
