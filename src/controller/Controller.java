@@ -1,10 +1,10 @@
 package controller;
 
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
 import com.esotericsoftware.kryonet.Connection;
@@ -34,26 +34,26 @@ public class Controller {
 	public Game createParty(Game partyRequest, Connection connection) {
 		ArrayList<Question> quizQuestions;
 		try {
-			ArrayList<Integer> listeIdQuestion = listeIdQuestion(partyRequest.getNbQuestion());
+//			ArrayList<Integer> listeIdQuestion = listeIdQuestion(partyRequest.getNbQuestion());
+//			quizQuestions = laBase.getQuestions(listeIdQuestion);
 
-			quizQuestions = laBase.getQuestions(listeIdQuestion);
+			quizQuestions = laBase.getQuestions(partyRequest.getNbQuestion());
 
 			Game game = new Game(0, partyRequest.getName(), partyRequest.getIdLeader(), partyRequest.getPlayerList(),
-					quizQuestions, partyRequest.getNbQuestion());
+					quizQuestions, partyRequest.getNbQuestion(), partyRequest.getTime());
 
-			game = laBase.createParty(game);
-		//	laBase.createQuestionParty(game);
-		//	laBase.createPlayerParty(game);
+			game = laBase.createMultiPlayerGame(game);
+			// laBase.createQuestionParty(game);
+			// laBase.createPlayerParty(game);
 
 			lesGames.getLesGame().add(new Game(game.getIdGame(), game.getName(), game.getIdLeader(),
-					game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion(), "12:00:00", connection));
+					game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion(), game.getTime(), connection));
 
 			return game;
-		} catch (ClassNotFoundException | IOException | SQLException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-
 	}
 
 	public void selectOption(Message message, Connection connection) {
@@ -63,6 +63,18 @@ public class Controller {
 			startGame(message.getIdGame(), connection);
 		} else if (message.getOption() == 5) { // Change le score du player
 			setScorePlayer(message.getIdGame(), message.getPlayer(), connection);
+		}
+	}
+
+	public void deconnectionClient(Connection connection) {
+		System.out.println("traitement");
+		for (Game game : lesGames.getLesGame()) {
+			game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
+
+			if (game.getLesConnections().isEmpty()) {
+				laBase.finishedSoloPlayerGame(game);
+				lesGames.getLesGame().remove(game);
+			}
 		}
 	}
 
@@ -85,11 +97,10 @@ public class Controller {
 	public void setScorePlayer(int idGame, Player player, Connection connection) {
 		for (Game game : lesGames.getLesGame()) {
 			if (game.getIdGame() == idGame) {
-				System.out.println("Nombre de connexion : " + game.getLesConnections().size());
 				for (Player p : game.getPlayerList()) {
 					if (p.getMyId() == player.getMyId()) {
 						p.setMyScore(player.getMyScore());
-
+						p.setNbQuestion(player.getNbQuestion());
 						// Envoie de la nouvelle liste des joueurs aux connexions de la partie
 						for (Connection conn : game.getLesConnections()) {
 							try {
@@ -111,7 +122,7 @@ public class Controller {
 				if (game.getStatusGame() == 1) {
 					game.getPlayerList().add(player);
 					connection.sendTCP(new Game(game.getIdGame(), game.getName(), game.getIdLeader(),
-							game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion()));
+							game.getPlayerList(), game.getGroupQuestions(), game.getNbQuestion(), game.getTime()));
 
 					// Envoie de la nouvelle liste des joueurs aux connections de la partie
 					for (Connection conn : game.getLesConnections()) {
@@ -159,11 +170,6 @@ public class Controller {
 		return randomNumber;
 	}
 
-	public ArrayList<Game> getListParty() {
-		ArrayList<Game> lesParty = laBase.getListParty();
-		return lesParty;
-	}
-
 	public MySQLAccess getLaBase() {
 		return laBase;
 	}
@@ -187,6 +193,5 @@ public class Controller {
 	public void setTheDecrypter(Jasypt theDecrypter) {
 		this.theDecrypter = theDecrypter;
 	}
-	
 
 }

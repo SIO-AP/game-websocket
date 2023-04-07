@@ -18,32 +18,34 @@ public class Game {
 	
 	public Game() {};
 	
-	public Game(String name, int idLeader, int nbQuestion, Player leader) {
+	public Game(String name, int idLeader, int nbQuestion, Player leader, String time) {
 		this.name = name;
 		this.idLeader = idLeader;
 		this.nbQuestion = nbQuestion;
 		this.playerList = new ArrayList<Player>();
-		this.playerList.add(leader);	
+		this.playerList.add(leader);
+		this.time = time;
 	}
 	
-	public Game(String name, int idParty, int nbQuestion, String time) {
+	public Game(String name, int idGame, int nbQuestion, String time) {
 		this.name = name;
 		this.nbQuestion = nbQuestion;
 		this.time = time;
-		this.idGame = idParty;
+		this.idGame = idGame;
 	}
 	
-	public Game(int idParty, String name, int idLeader, ArrayList<Player> playerList, ArrayList<Question> theQuestions, int nbQuestion) {
-		this.idGame = idParty;
+	public Game(int idGame, String name, int idLeader, ArrayList<Player> playerList, ArrayList<Question> theQuestions, int nbQuestion, String time) {
+		this.idGame = idGame;
 		this.name = name;
 		this.idLeader = idLeader;
 		this.playerList = playerList;
 		this.groupQuestions = theQuestions;
 		this.nbQuestion = nbQuestion;
+		this.time = time;
 	}
 	
-	public Game(int idParty, String name, int idLeader, ArrayList<Player> playerList, ArrayList<Question> theQuestions, int nbQuestion, String time, Connection connection) {
-		this.idGame = idParty;
+	public Game(int idGame, String name, int idLeader, ArrayList<Player> playerList, ArrayList<Question> theQuestions, int nbQuestion, String time, Connection connection) {
+		this.idGame = idGame;
 		this.name = name;
 		this.idLeader = idLeader;
 		this.playerList = playerList;
@@ -59,8 +61,8 @@ public class Game {
 		return idGame;
 	}
 
-	public void setIdGame(int idParty) {
-		this.idGame = idParty;
+	public void setIdGame(int idGame) {
+		this.idGame = idGame;
 	}
 
 	public String getName() {
