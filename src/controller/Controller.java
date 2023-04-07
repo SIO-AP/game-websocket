@@ -63,17 +63,48 @@ public class Controller {
 			startGame(message.getIdGame(), connection);
 		} else if (message.getOption() == 5) { // Change le score du player
 			setScorePlayer(message.getIdGame(), message.getPlayer(), connection);
+		} else if (message.getOption() == 6) { // Déconnexion en pleine game
+			deconnectionClient(connection, message.getIdGame(), message.getPlayer());
+		}
+	}
+
+	private void deconnectionClient(Connection connection, int idGame, Player player) {
+		for (Game game : lesGames.getLesGame()) {
+			if (game.getIdGame() == idGame) {
+				game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
+
+				for (Player playerGame : game.getPlayerList()) {
+					if (playerGame.getMyId() == player.getMyId()) {
+						playerGame.setNbQuestion(-1);
+						System.out.println("change deco");
+					//	break;
+					}
+				}
+
+				System.out.println("test");
+
+				if (game.getLesConnections().isEmpty()) {
+					laBase.finishedSoloPlayerGame(game);
+					lesGames.getLesGame().remove(game);
+				}
+
+				//break;
+			}
 		}
 	}
 
 	public void deconnectionClient(Connection connection) {
 		System.out.println("traitement");
-		for (Game game : lesGames.getLesGame()) {
-			game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
+		System.out.println(lesGames.getLesGame().size());
+		if (lesGames.getLesGame().size() > 0) {
+			for (Game game : lesGames.getLesGame()) {
+				game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
 
-			if (game.getLesConnections().isEmpty()) {
-				laBase.finishedSoloPlayerGame(game);
-				lesGames.getLesGame().remove(game);
+				if (game.getLesConnections().isEmpty()) {
+					laBase.finishedSoloPlayerGame(game);
+					lesGames.getLesGame().remove(game);
+				}
+				System.out.println("test2");
 			}
 		}
 	}
