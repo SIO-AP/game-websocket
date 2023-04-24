@@ -48,17 +48,6 @@ public class ServerGame {
 
 			public void disconnected(Connection connection) {
 				monController.deconnectionClient(connection);
-
-//				Iterator<Game> iterator = monController.getLesGames().getLesGame().iterator();
-//				while (iterator.hasNext()) {
-//					Game game = iterator.next();
-//					game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
-//
-//					if (game.getLesConnections().size() == 0) {
-//						monController.getLaBase().finishedSoloPlayerGame(game);
-//						iterator.remove();
-//					}
-//				}
 			}
 
 			public void received(Connection connection, Object object) {

@@ -69,42 +69,38 @@ public class Controller {
 	}
 
 	private void deconnectionClient(Connection connection, int idGame, Player player) {
-		for (Game game : lesGames.getLesGame()) {
+		Iterator<Game> iterator = lesGames.getLesGame().iterator();
+		while (iterator.hasNext()) {
+			Game game = iterator.next();
 			if (game.getIdGame() == idGame) {
 				game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
 
 				for (Player playerGame : game.getPlayerList()) {
 					if (playerGame.getMyId() == player.getMyId()) {
 						playerGame.setNbQuestion(-1);
-						System.out.println("change deco");
-					//	break;
+						break;
 					}
 				}
 
-				System.out.println("test");
-
-				if (game.getLesConnections().isEmpty()) {
+				if (game.getLesConnections().size() == 0) {
 					laBase.finishedSoloPlayerGame(game);
-					lesGames.getLesGame().remove(game);
+					iterator.remove();
 				}
 
-				//break;
+				break;
 			}
 		}
 	}
 
 	public void deconnectionClient(Connection connection) {
-		System.out.println("traitement");
-		System.out.println(lesGames.getLesGame().size());
-		if (lesGames.getLesGame().size() > 0) {
-			for (Game game : lesGames.getLesGame()) {
-				game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
+		Iterator<Game> iterator = lesGames.getLesGame().iterator();
+		while (iterator.hasNext()) {
+			Game game = iterator.next();
+			game.getLesConnections().removeIf(connexion -> connexion.equals(connection));
 
-				if (game.getLesConnections().isEmpty()) {
-					laBase.finishedSoloPlayerGame(game);
-					lesGames.getLesGame().remove(game);
-				}
-				System.out.println("test2");
+			if (game.getLesConnections().size() == 0) {
+				laBase.finishedSoloPlayerGame(game);
+				iterator.remove();
 			}
 		}
 	}
@@ -173,32 +169,6 @@ public class Controller {
 			}
 		}
 		connection.sendTCP(new Message(3));
-	}
-
-	private ArrayList<Integer> listeIdQuestion(int maxQuestions)
-			throws FileNotFoundException, ClassNotFoundException, IOException, SQLException {
-
-		ArrayList<Integer> listeIdQuestion = new ArrayList<Integer>();
-		int nombreTotalQuestion = laBase.nombreTotalQuestion();
-
-		for (int i = 0; i < maxQuestions; i++) {
-			int test = generateQuestionId(nombreTotalQuestion);
-
-			if (listeIdQuestion.contains(test)) {
-				while (listeIdQuestion.contains(test)) {
-					test = generateQuestionId(nombreTotalQuestion);
-				}
-				listeIdQuestion.add(test);
-			} else {
-				listeIdQuestion.add(test);
-			}
-		}
-		return listeIdQuestion;
-	}
-
-	public int generateQuestionId(int nombreTotalQuestion) {
-		int randomNumber = new Random().nextInt(nombreTotalQuestion + 0);
-		return randomNumber;
 	}
 
 	public MySQLAccess getLaBase() {
