@@ -41,7 +41,7 @@ public class MySQLAccess {
 
 		// Charge le driver
 		try {
-			Class.forName(properties.getProperty("jdbc.driver.class"));
+			Class.forName(monController.getTheDecrypter().decrypt(properties.getProperty("jdbc.driver.class")));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -194,7 +194,7 @@ public class MySQLAccess {
 
 				psPlayer.execute();
 			}
-			
+
 			for (Question question : game.getGroupQuestions()) {
 
 				psQuestion.setInt(1, idGame);
