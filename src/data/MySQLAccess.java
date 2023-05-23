@@ -142,7 +142,7 @@ public class MySQLAccess {
 	}
 
 	public Game createMultiPlayerGame(Game game) {
-		String query = "INSERT INTO h5ws00fg4ypyuohr.GAME VALUES (DEFAULT, ?, ?, ?, ?)";
+		String query = "INSERT INTO sbcg_db.GAME VALUES (DEFAULT, ?, ?, ?, ?)";
 		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 				PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);) {
 
@@ -169,11 +169,11 @@ public class MySQLAccess {
 	}
 
 	public void finishedSoloPlayerGame(Game game) {
-		String queryGame = "UPDATE h5ws00fg4ypyuohr.GAME SET progress_game = 3 WHERE (id_game = ?)";
+		String queryGame = "UPDATE sbcg_db.GAME SET progress_game = 3 WHERE (id_game = ?)";
 
-		String queryPlayer = "INSERT INTO h5ws00fg4ypyuohr.GAME_PLAYER VALUES (?, ?, ?)";
+		String queryPlayer = "INSERT INTO sbcg_db.GAME_PLAYER VALUES (?, ?, ?)";
 
-		String queryQuestion = "INSERT INTO h5ws00fg4ypyuohr.GAME_QUESTION VALUES (?, ?)";
+		String queryQuestion = "INSERT INTO sbcg_db.GAME_QUESTION VALUES (?, ?)";
 
 		try (Connection connection = DriverManager.getConnection(urlCnx, loginCnx, passwordCnx);
 				PreparedStatement psPlayer = connection.prepareStatement(queryPlayer);
